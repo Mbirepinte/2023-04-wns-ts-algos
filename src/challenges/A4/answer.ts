@@ -1,7 +1,7 @@
 /**
  * In this challenge, you have to regroup messages into an array of day based on their
  * sentAt property.
- * You have to manipulate dates in vanillaJS. Be carefull to call, if needed, setUTCHours, setUTCMinutes, ... 
+ * You have to manipulate dates in vanillaJS. Be carefull to call, if needed, setUTCHours, setUTCMinutes, ...
  * instead of setHouts, setMinutes, ... to avoid timezone offsets!
  *
  * Example:
@@ -21,7 +21,7 @@
  *          ]
  *      },
  * ]
- * 
+ *
  * @param messages List of messages, unsorted and not grouped in days
  * @returns Sorted list of days (only days with messages!) with a list of sorted messages of the day
  */
@@ -32,15 +32,51 @@ export default function ({ messages }: { messages: Message[] }): DayMessages[] {
     return [];
 }
 */
+export default function ({ messages }: { messages: Message[] }): DayMessages[] {
+  messages.sort((a, b) => {
+    const dateA = new Date(a.sentAt);
+    const dateB = new Date(b.sentAt);
+    return dateA.getTime() - dateB.getTime();
+  });
 
+  const messagesByDay: { [key: string]: Message[] } = {};
+
+  messages.forEach((message) => {
+    const sentAtDate = new Date(message.sentAt);
+    const dayKey = new Date(
+      Date.UTC(
+        sentAtDate.getUTCFullYear(),
+        sentAtDate.getUTCMonth(),
+        sentAtDate.getUTCDate()
+      )
+    );
+
+    if (!messagesByDay[dayKey.toISOString()]) {
+      messagesByDay[dayKey.toISOString()] = [];
+    }
+
+    messagesByDay[dayKey.toISOString()].push(message);
+  });
+
+  const groupedMessages: DayMessages[] = Object.keys(messagesByDay).map(
+    (day) => {
+      return {
+        day,
+        messages: messagesByDay[day],
+      };
+    }
+  );
+
+  return groupedMessages;
+}
 // used interfaces, do not touch
 export interface Message {
-    author: string;
-    sentAt: string;
-    message: string;
+  author: string;
+  sentAt: string;
+  message: string;
 }
 
 export interface DayMessages {
-    day: string;
-    messages: Message[];
+  day: string;
+  messages: Message[];
 }
